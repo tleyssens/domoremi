@@ -9,86 +9,23 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
-    <script type="text/javascript">
-      var olatA = 0x14 //output register
-        , olatB = 0x15 
-        , outputs = {
-            Liv1:       [0x20, olatA, 1],   Gang_st:    [0x20, olatB, 1],
-            Liv2:       [0x20, olatA, 4],   Badk:       [0x20, olatB, 2],
-            Gang1_2:    [0x20, olatA, 8],   CV_lok:     [0x20, olatB, 4],
-            Traphal:    [0x20, olatA, 16],  Keuken:     [0x20, olatB, 8],
-            Kelder:     [0x20, olatA, 32],  Slk:        [0x20, olatB, 128],
-            All_u:      [0x21, olatA, 1],   GarPoVo:    [0x21, olatB, 64],
-            All_a:      [0x21, olatA, 2],   GarPoAch:   [0x21, olatB, 128],
-            Gar3V:      [0x21, olatA, 16],
-            Gar2M:      [0x21, olatA, 32],
-            Gar1A:      [0x21, olatA, 64],  
-            Picam:      [0x22, olatA, 1],   Versterker: [0x22, olatB, 64],
-            Zw_ka_lamp: [0x22, olatA, 4],   Tuner:      [0x22, olatB, 128],
-            Bapi_230V:  [0x22, olatA, 16],
-            PiGergB:    [0x22, olatA, 64],
-         }
-      function buttonList() {
-        Object.keys(outputs).forEach(function(entry) {
-          console.log('In functie buttonList');
-          //buttons
-             /* var b = document.createElement("BUTTON");
-              var t = document.createTextNode(entry);
-              b.setAttribute('id' , entry);
-              b.type ="button";
-              b.className="btn btn-primary";
-              b.setAttribute('onclick','toggle(this.id)');
-              b.appendChild(t);
-              document.getElementById('buttons').appendChild(b);*/
-          //checkboxen          
-          var l = document.createElement("label");
-          l.className="btn btn-primary col-xs-3";
-          var c = document.createElement("input");
-          var t1 = document.createTextNode(entry);
-          c.type = "checkbox";
-          c.autocomplete = "off";
-          l.id = entry;
-          l.setAttribute('onclick','toggle(this.id)');
-          l.appendChild(c);
-          l.appendChild(t1);
-          document.getElementById('buttons1').appendChild(l);
-          });
-      }
-    </script>
+    <script type="text/javascript" src="buttonSetup.js"></script>
   </head>
 <body>
   <div class="container-fluid">
+    
     <h1>Domoremi</h1>
-      <div id="buttons"></div>
-      <div class="btn-group" id="buttons1" data-toggle="buttons"></div>
-
-        <!-- Buttovoorbeeld Provides extra visual weight and identifies the primary action in a set of buttons -->
-        <button type="button" class="btn btn-primary">Primary</button>
-        <!-- Secondary, outline button -->
-        <button type="button" class="btn btn-secondary">Secondary</button>
-        <!-- Indicates a successful or positive action -->
-        <button type="button" class="btn btn-success">Success</button>
-        <!-- Contextual button for informational alert messages -->
-        <button type="button" class="btn btn-info">Info</button>
-        <!-- Indicates caution should be taken with this action -->
-        <button type="button" class="btn btn-warning">Warning</button>
-        <!-- Indicates a dangerous or potentially negative action -->
-        <button type="button" class="btn btn-danger">Danger</button>
-        <!-- Deemphasize a button by making it look like a link while maintaining button behavior -->
-        <button type="button" class="btn btn-link">Link</button>
-<br>
-        <!--checbox voorbeeld-->
-        <div class="btn-group" data-toggle="buttons">
-        <label class="btn btn-primary active">
-          <input type="checkbox" autocomplete="off" checked> Checkbox 1 (pre-checked)
-        </label>
-        <label class="btn btn-primary">
-          <input type="checkbox" autocomplete="off"> Checkbox 2
-        </label>
-        <label class="btn btn-primary">
-          <input type="checkbox" autocomplete="off"> Checkbox 3
-        </label>
-      </div>
+      <h2>Outputs</h2>
+        <div class="row">
+          <div id="buttons"></div>
+        </div>
+        <div class="row">  
+          <div id="buttons1" data-toggle="buttons"></div>
+        </div>
+      <h2>Inputs</h2>
+        <div class="row">
+          <div id="inputs"></div>
+        </div>
   </div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js" integrity="sha384-vZ2WRJMwsjRMW/8U7i6PWi6AlO1L79snBrmgiDpgIWJ82z8eA5lenwvxbMV1PAh7" crossorigin="anonymous"></script>
@@ -98,14 +35,14 @@
     socket.on('ack button status', function (data){
         console.log('index.html : ' + data.button);
     });
-   
+
     buttonList();
-    
 
     function toggle(button)
     {
      console.log(button + ' gedrukt')
         console.log('In functie toggle: ' + button);
+        jQuery('#'+button).toggleClass('active');
         socket.emit('button update event', { button: button});
     }
   </script>
