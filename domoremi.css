@@ -1,0 +1,19 @@
+body {
+    background-color: lightblue;
+}
+input[type="checkbox"] + label {
+	color: #ffffff;
+}
+btn	:active + label {
+	color: #00ff00;
+}
+
+
+
+.btn {
+    margin: 5px 0px 0px 0px;
+    padding: 0px;
+}
+.well {
+    padding: px;
+}
