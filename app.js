@@ -1,29 +1,27 @@
 var app = require('http').createServer(handler)
+  , coffee = require('coffee-script/register')
   , io = require('socket.io').listen(app)
   , fs = require('fs')
+  , path = require('path')
   , i2c = require('i2c')
+  //, cheerio = require('cheerio')
   , iocon = 0x0A
-  , iodirA = 0x00 //Pin direction register
-  , iodirB = 0x01
-  , gpioA = 0x12 //input register
-  , gpioB = 0x13
-  , olatA = 0x14 //output register
-  , olatB = 0x15 
+  , iodirA = 0x00 , iodirB = 0x01 //Pin direction register
+  , gpioA = 0x12 , gpioB = 0x13   //input register
+  , olatA = 0x14 , olatB = 0x15   //output register
   , data = '""'
   , debug = true
-  , outIC1 = 0
-  , outIC2 = 0
   , chip = 0
   , chipO = {}
   , chipList = []
-  , devices = [0x20, 0x21, 0x22]
-  , devices1 = {
+  , devices = {
       ic1 : [0x20, 0x00], // outputs
       ic2 : [0x21, 0x00],
       ic3 : [0x22, 0x00],
       ic4 : [0x23, 0xff], // inputs
       ic5 : [0x24, 0xff],
-      ic6 : [0x25, 0xff]
+      ic6 : [0x25, 0xff],
+      ic7 : [0x26, 0xff]
   }
   , outputs = {
       Liv1:       [0x20, olatA, 1],   Gang_st:    [0x20, olatB, 1],
@@ -41,7 +39,8 @@ var app = require('http').createServer(handler)
       Bapi_230V:  [0x22, olatA, 16],
       PiGergB:    [0x22, olatA, 64],
     } 
-    , input = 0;
+    , input = 0
+    , inputs = {};
 
         /*function setupDevicesOud() {
           devices.forEach(function(entry) { // werkt 
@@ -56,12 +55,12 @@ var app = require('http').createServer(handler)
         }*/
 
 function setupDevices() {
-    //console.log(Object.keys(devices1));
-  Object.keys(devices1).forEach(function(entry) {
-      //console.log(devices1[entry]);
-    var ic = devices1[entry];
+    //console.log(Object.keys(devices));
+  Object.keys(devices).forEach(function(entry) {
+      //console.log(devices[entry]);
+    var ic = devices[entry];
       //console.log(ic[0]);
-      //devices1[entry].forEach(function(ic) {
+      //devices[entry].forEach(function(ic) {
       //  console.log(ic);
       //});
     chipList[ic[0]] = new i2c(ic[0]);
@@ -111,11 +110,11 @@ function puls(naam){
 
 function leesInputs() {
   console.log('in leesInputs');
-  Object.keys(devices1).forEach(function(entry) {
-      //console.log(devices1[entry]);
-    var ic = devices1[entry];
+  Object.keys(devices).forEach(function(entry) {
+      //console.log(devices[entry]);
+    var ic = devices[entry];
       //console.log(ic[0]);
-      //devices1[entry].forEach(function(ic) {
+      //devices[entry].forEach(function(ic) {
       //  console.log(ic);
       //});
     if (ic[1] == 0xff) {
@@ -124,7 +123,13 @@ function leesInputs() {
     };
   });
   var t1 = document.createTextNode(input[1].toString(2));
+  document.getElementById('inputs').appendChild(t1);
   
+}
+
+function exit() {
+  console.log('bye');
+  process.exit();
 }
 
 //init
@@ -133,7 +138,7 @@ setupDevices();
 app.listen(8085);
 //serving index.html
 function handler (req, res) {
-  fs.readFile(__dirname + '/index.html',
+  /*fs.readFile(__dirname + '/index.html',
   function (err, data) {
     if (err) {
           res.writeHead(500);
@@ -141,6 +146,38 @@ function handler (req, res) {
     }
     res.writeHead(200);
     res.end(data);
+  });*/
+  
+  var filePath = req.url;
+  if (filePath == '/')
+    filePath = '/index.html';
+
+  filePath = __dirname+filePath;
+  var extname = path.extname(filePath);
+  var contentType = 'text/html';
+
+  switch (extname) {
+    case '.js':
+      contentType = 'text/javascript';
+      break;
+    case '.css':
+      contentType = 'text/css';
+      break;
+  }
+
+  fs.exists(filePath, function(exists) {
+    if (exists) {
+      fs.readFile(filePath, function(error, content) {
+        if (error) {
+          res.writeHead(500);
+          res.end();
+        }
+        else {                   
+          res.writeHead(200, { 'Content-Type': contentType });
+          res.end(content, 'utf-8');                  
+        }
+      });
+    }
   });
 }
 
@@ -165,3 +202,5 @@ io.sockets.on('connection', function (socket) {   console.log('connected');
   });
   console.log('io.socket.connection');
 });
+
+process.on('SIGINT', exit);
