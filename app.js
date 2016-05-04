@@ -1,18 +1,15 @@
 var app = require('http').createServer(handler)
-  , coffee = require('coffee-script/register')
   , io = require('socket.io').listen(app)
   , fs = require('fs')
   , path = require('path')
   , i2c = require('i2c')
-  //, cheerio = require('cheerio')
   , iocon = 0x0A
-  , iodirA = 0x00 , iodirB = 0x01 //Pin direction register
-  , gpioA = 0x12 , gpioB = 0x13   //input register
-  , olatA = 0x14 , olatB = 0x15   //output register
+  , iodirA = 0x00 , iodirB = 0x01//Pin direction register  
+  , gpioA = 0x12  , gpioB = 0x13 //input register
+  , olatA = 0x14  , olatB = 0x15//output register
   , data = '""'
   , debug = true
   , chip = 0
-  , chipO = {}
   , chipList = []
   , devices = {
       ic1 : [0x20, 0x00], // outputs
@@ -24,7 +21,7 @@ var app = require('http').createServer(handler)
       ic7 : [0x26, 0xff]
   }
   , outputs = {
-      Liv1:       [0x20, olatA, 1],   Gang_st:    [0x20, olatB, 1],
+      Living1:       [0x20, olatA, 1],   Gang_st:    [0x20, olatB, 1],
       Liv2:       [0x20, olatA, 4],   Badk:       [0x20, olatB, 2],
       Gang1_2:    [0x20, olatA, 8],   CV_lok:     [0x20, olatB, 4],
       Traphal:    [0x20, olatA, 16],  Keuken:     [0x20, olatB, 8],
@@ -39,20 +36,9 @@ var app = require('http').createServer(handler)
       Bapi_230V:  [0x22, olatA, 16],
       PiGergB:    [0x22, olatA, 64],
     } 
-    , input = 0
-    , inputs = {};
-
-        /*function setupDevicesOud() {
-          devices.forEach(function(entry) { // werkt 
-            chipList[entry] = new i2c(entry)
-            chipList[entry].writeBytes(iocon, [0x00], function(err) { });
-            chipList[entry].writeBytes(iodirA,[0x00], function(err) { });
-            chipList[entry].writeBytes(iodirB,[0x00], function(err) { });
-            chipList[entry].writeBytes(olatA, [0x00], function(err) { });
-            chipList[entry].writeBytes(olatB, [0x00], function(err) { });
-          });
-          return chipList;
-        }*/
+    , inputs = 0
+    , inputs1 = {}
+    , chatMsg = [];
 
 function setupDevices() {
     //console.log(Object.keys(devices));
@@ -64,41 +50,31 @@ function setupDevices() {
       //  console.log(ic);
       //});
     chipList[ic[0]] = new i2c(ic[0]);
-    chipList[ic[0]].writeBytes(iocon, [0x00], function(err) { });
-    chipList[ic[0]].writeBytes(iodirA,[ic[1]], function(err) { });
-    chipList[ic[0]].writeBytes(iodirB,[ic[1]], 
-      function(err) { });
+    chipList[ic[0]].writeBytes(iocon, [0x00], function(err) { if(err) {console.log('error iocon ' + err)}});
+    chipList[ic[0]].writeBytes(iodirA,[ic[1]], function(err) { if(err) {console.log('error iodirA ' + err)}});
+    chipList[ic[0]].writeBytes(iodirB,[ic[1]], function(err) { if(err) {console.log('error iodirB ' + err)}});
     if (ic[1] == 0x00) {
       console.log(entry + ' = output');
-      chipList[ic[0]].writeBytes(olatA, [ic[1]], function(err) { });
-      chipList[ic[0]].writeBytes(olatB, [ic[1]], function(err) { }); 
+      chipList[ic[0]].writeBytes(olatA, [ic[1]], function(err) { if(err) {console.log('error olatA ' + err)}});
+      chipList[ic[0]].writeBytes(olatB, [ic[1]], function(err) { if(err) {console.log('error olatB ' + err)}});
     };
     if (ic[1] == 0xff) {
       console.log(entry + ' = input');
-      chipList[ic[0]].writeBytes(gpioA, [ic[1]], function(err) { });
-      chipList[ic[0]].writeBytes(gpioB, [ic[1]], function(err) { });
+      chipList[ic[0]].writeBytes(gpioA, [ic[1]], function(err) { if(err) {console.log('error gpioA ' + err)}});
+      chipList[ic[0]].writeBytes(gpioB, [ic[1]], function(err) { if(err) {console.log('error gpioB ' + err)}});
     };
   });
   return chipList;
 }
 
-			/*function setupButtons() {
-			  Object.keys(outputs).forEach(function(entry) {
-			    var b = document.createElement("BUTTON");
-			    var t = document.createTextNode(entry);
-			    b.appendChild(t);
-			    document.body.appendChild(b);
-			  });
-			}*/
-
 function aan(chip,kant,bit) {
   console.log('in aan');
-  chipList[chip].writeBytes(kant, [bit], function(err) { });
+  chipList[chip].writeBytes(kant, [bit], function(err) { if(err) {console.log('error aan ' + err)}});
 }
 
 function uit(chip, kant) {
   console.log('in uit');
-  chipList[chip].writeBytes(kant, [0], function(err) { });
+  chipList[chip].writeBytes(kant, [0], function(err) { if(err) {console.log('error uit ' + err)}});
 }
 
 function puls(naam){
@@ -118,13 +94,18 @@ function leesInputs() {
       //  console.log(ic);
       //});
     if (ic[1] == 0xff) {
-      var input = chipList[ic[0]].readBytes(gpioA, 2,  function(err) { });
-      console.log(entry + ' = ' + input[0].toString(2) + '; ' + input[1].toString(2));  
+      var inputs = chipList[ic[0]].readBytes(gpioA, 2,  function(err) { if(err) {console.log('error gpioA ' + err)}});
+      //console.log(entry + ' = ' + input[0].toString(2) + '; ' + input[1].toString(2));  
+      var n1 = inputs[0].toString(2);
+      var n2 = inputs[1].toString(2);
+      console.log(entry + ' = ' + "00000000".substr(n1.length)+ n1 + '; ' + "00000000".substr(n2.length)+ n2);
+      var inputstring = (entry + ' = ' + "00000000".substr(n1.length)+ n1 + '; ' + "00000000".substr(n2.length)+ n2);
+      inputs1[entry] = inputstring;
+
     };
   });
-  var t1 = document.createTextNode(input[1].toString(2));
-  document.getElementById('inputs').appendChild(t1);
-  
+  return inputs1;
+  //var t1 = document.createTextNode(input[1].toString(2));  
 }
 
 function exit() {
@@ -147,7 +128,6 @@ function handler (req, res) {
     res.writeHead(200);
     res.end(data);
   });*/
-  
   var filePath = req.url;
   if (filePath == '/')
     filePath = '/index.html';
@@ -178,10 +158,13 @@ function handler (req, res) {
         }
       });
     }
-  });
+  });  
 }
 
-io.sockets.on('connection', function (socket) {   console.log('connected'); 
+io.sockets.on('connection', function (socket) {   
+  console.log('connected'); 
+  io.emit('buttonlist', outputs ); 
+  io.emit('OldMsg', chatMsg );
   //if button pressed => react  
   socket.on('button update event', function (data) {
     console.log('App.js button = ' + data.button);
@@ -192,7 +175,8 @@ io.sockets.on('connection', function (socket) {   console.log('connected');
           break;
         case "Inputs lezen" :
           console.log('inputs lezen gedrukt');
-          leesInputs();
+          var inp = leesInputs();
+          io.emit('inputUpdate', inp);
           break;
         default :
           console.log('in default');
@@ -200,7 +184,13 @@ io.sockets.on('connection', function (socket) {   console.log('connected');
       }
       io.emit('ack button status', { button: data.button });
   });
+  socket.on('chat message', function(msg){
+    io.emit('chat message', msg);
+    chatMsg.push(msg);
+    console.log(chatMsg);
+  });
   console.log('io.socket.connection');
 });
 
 process.on('SIGINT', exit);
+
