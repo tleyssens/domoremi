@@ -4,4 +4,4 @@
          Updated node to version 5.9.0 and i2c is not supporting this.
 
 20160504 Everything is working again. Added a chat box wich scrolls automagically.
-![preview1](github.com/tleyssens/tleyssens.github.io/preview1.gif)
+![preview1](tleyssens.github.io/preview1.gif)
