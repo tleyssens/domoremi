@@ -7,13 +7,20 @@ input[type="checkbox"] + label {
 btn	:active + label {
 	color: #00ff00;
 }
-
-
-
 .btn {
-    margin: 5px 0px 0px 0px;
-    padding: 0px;
+   margin: 2px;
+} 
+.col-xs-4 {
+   padding-right: 0.1375rem;
+   padding-left: 0.1375rem;
 }
+
 .well {
-    padding: px;
+   padding: 1px;
+}
+#chatWindow {
+  height: 150px; 
+  border: 1px solid green ;
+  background: aqua;
+  overflow: auto;
 }
