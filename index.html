@@ -1,48 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <link rel="stylesheet" type="text/css" href="domoremi.css">
-    <title>Domoremi</title>
+    
+    <title>Domoremi 14</title>
     <!-- Required meta tags always come first -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="domoremi.css">
     <script type="text/javascript" src="buttonSetup.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; right: 2%; bottom: 3%; width: 50%; }
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px;  }
+      #messages li:nth-child(odd) { background: #eee; }
+    </style>  
   </head>
 <body>
   <div class="container-fluid">
-    
-    <h1>Domoremi</h1>
+    <h1>Domoremi 14</h1>
       <h2>Outputs</h2>
         <div class="row">
           <div id="buttons"></div>
         </div>
-        <div class="row">  
-          <div id="buttons1" data-toggle="buttons"></div>
+        <div class="row">
+          <div id="buttons" data-toggle="buttons"></div>
         </div>
       <h2>Inputs</h2>
         <div class="row">
-          <div id="inputs"></div>
+          <div id="inputs">
+          	<ul>
+      	   	  <li id = ic4></li>
+          		<li id = ic5></li>
+          		<li id = ic6></li>
+          		<li id = ic7></li>
+              <li id = bl></li>    
+          	</ul>
+          </div>
         </div>
+      <h2>Camera's</h2>
+        <div class="row">
+          <div class="col-md-4">
+            <div id="camera1">
+              <img src="http://192.168.1.72:8081/&t=" width='' onload='setTimeout(function() {src = src.substring(0, (src.lastIndexOf("t=")+2))+(new Date()).getTime()}, 1000)' onerror='setTimeout(function() {src = src.substring(0, (src.lastIndexOf("t=")+2))+(new Date()).getTime()}, 5000)' alt='' /> 
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div id="camera2">
+              <img src="http://192.168.1.72:8082/&t=" width='' onload='setTimeout(function() {src = src.substring(0, (src.lastIndexOf("t=")+2))+(new Date()).getTime()}, 1000)' onerror='setTimeout(function() {src = src.substring(0, (src.lastIndexOf("t=")+2))+(new Date()).getTime()}, 5000)' alt='' /> 
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div id="camera4">
+              <img src="http://192.168.1.73:8080/&t=" width='320' onload='setTimeout(function() {src = src.substring(0, (src.lastIndexOf("t=")+2))+(new Date()).getTime()}, 1000)' onerror='setTimeout(function() {src = src.substring(0, (src.lastIndexOf("t=")+2))+(new Date()).getTime()}, 5000)' alt='' /> 
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div id="camera3">
+              <img src="http://192.168.1.70:8081/&t=" width='' onload='setTimeout(function() {src = src.substring(0, (src.lastIndexOf("t=")+2))+(new Date()).getTime()}, 1000)' onerror='setTimeout(function() {src = src.substring(0, (src.lastIndexOf("t=")+2))+(new Date()).getTime()}, 5000)' alt='' /> 
+            </div>
+          </div>          
+          <div class="col-md-4">
+            <h2>Chatwindow</h2>
+            <div id="chatWindow">              
+              <div class="inner">
+                <ul id="messages"></ul>
+              </div>
+            </div>
+              <form action="">
+                <input id="m" autocomplete="off" /><button>Send</button>
+              </form>
+          </div>
   </div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js" integrity="sha384-vZ2WRJMwsjRMW/8U7i6PWi6AlO1L79snBrmgiDpgIWJ82z8eA5lenwvxbMV1PAh7" crossorigin="anonymous"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script>
     var socket = io.connect(document.location.href);
-    socket.on('ack button status', function (data){
-        console.log('index.html : ' + data.button);
+    socket.on('buttonlist', function (bl) {
+		<!--document.getElementById('bl').innerHTML = JSON.stringify(bl);-->
+		console.log(bl);
+  		if (typeof outputs ==='undefined') {
+  			outputs = bl;
+        console.log(outputs);
+        buttonList(outputs);
+      }
     });
-
-    buttonList();
+    socket.on('OldMsg',function (oldMsg) {
+      console.log('OldMessage' + oldMsg);
+      var arrayLength = oldMsg.length;
+      console.log($('#messages').children().length);
+      if ($('#messages').children().length === 0) {
+        for (var i = 0; i < arrayLength; i++) {
+          $('#messages').append($('<li>').text(oldMsg[i]));
+          $('#chatWindow').animate({scrollTop: i*21},100);
+        };
+      };  
+    });
+    
+    
+    
+    socket.on('ack button status', function (data){
+    	console.log('index.html : ' + data.button);
+    });
+    socket.on('inputUpdate', function (inp) { //knop inputs lezen gedrukt
+        document.getElementById('ic4').innerHTML = inp.ic4;
+        document.getElementById('ic5').innerHTML = inp.ic5;
+        document.getElementById('ic6').innerHTML = inp.ic6;
+        document.getElementById('ic7').innerHTML = inp.ic7;
+        console.log(inp);
+    });
+    <!--chat -->
+    $('form').submit(function(){
+        socket.emit('chat message', $('#m').val());
+        $('#m').val('');
+      return false;
+      });
+    socket.on('chat message', function(msg){
+        
+        $('#messages').append($('<li>').text(msg));
+        $('#chatWindow').animate({scrollTop: $('#chatWindow')[0].scrollHeight});
+       <!-- $('#chatWindow').animate({scrollTop: $('#chatWindow').prop("scrollHeight";)}, 500); -->
+    }); 
+    
 
     function toggle(button)
     {
      console.log(button + ' gedrukt')
         console.log('In functie toggle: ' + button);
-        jQuery('#'+button).toggleClass('active');
         socket.emit('button update event', { button: button});
     }
   </script>
