@@ -5,3 +5,4 @@
 
 20160504 Everything is working again. Added a chat box wich scrolls automagically.
 ![preview1](https://raw.githubusercontent.com/tleyssens/tleyssens.github.io/master/preview1.gif)
+![preview2](https://raw.githubusercontent.com/tleyssens/tleyssens.github.io/master/preview2.gif)
